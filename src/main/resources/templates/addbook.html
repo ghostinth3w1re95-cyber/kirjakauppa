@@ -97,6 +97,16 @@
                 <input type="text" id="author" th:field="*{author}" placeholder="Enter author name" required>
             </div>
             
+                    <div class="form-group">
+                        <label for="category">Category:</label>
+                        <select id="category" th:field="*{category.categoryid}" class="form-control">
+                            <option value="" disabled selected>Select category</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.categoryid}"
+                                    th:text="${cat.name}"></option>
+                        </select>
+                    </div>
+            
             <div class="form-group">
                 <label for="price">Price ($):</label>
                 <input type="number" id="price" th:field="*{price}" placeholder="Enter price" step="0.01" required>

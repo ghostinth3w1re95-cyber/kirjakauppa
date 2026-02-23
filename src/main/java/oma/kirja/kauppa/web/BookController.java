@@ -2,6 +2,8 @@ package oma.kirja.kauppa.web;
 
 import oma.kirja.kauppa.domain.Book;
 import oma.kirja.kauppa.domain.BookRepository;
+import oma.kirja.kauppa.domain.Category;
+import oma.kirja.kauppa.domain.CategoryRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -10,9 +12,11 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
 
     private final BookRepository bookRepository;
+    private final CategoryRepository categoryRepository;
 
-    public BookController(BookRepository bookRepository) {
+    public BookController(BookRepository bookRepository, CategoryRepository categoryRepository) {
         this.bookRepository = bookRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @GetMapping("/")
@@ -36,6 +40,7 @@ public class BookController {
     @GetMapping("/addbook")
     public String showAddBook(Model model) {
         model.addAttribute("book", new Book());
+        model.addAttribute("categories", categoryRepository.findAll());
         return "addbook";
     }
 
@@ -56,6 +61,7 @@ public class BookController {
         Book book = bookRepository.findById(id).orElse(null);
         if (book != null) {
             model.addAttribute("book", book);
+            model.addAttribute("categories", categoryRepository.findAll());
             return "edit";
         }
         return "redirect:/books";
