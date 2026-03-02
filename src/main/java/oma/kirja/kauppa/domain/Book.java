@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Book {
@@ -20,6 +21,7 @@ public class Book {
 
     @ManyToOne
     @JoinColumn(name = "categoryid")
+    @JsonIgnore
     private Category category;
 
     public Book() {}
