@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Books - Bookstore</title>
+
     <!-- Bootstrap CSS -->
-    <link type="text/css" rel="stylesheet" href="/css/bootstrap.min.css" th:href="@{/css/bootstrap.min.css}" />
+    <link type="text/css" rel="stylesheet"
+          href="/css/bootstrap.min.css"
+          th:href="@{/css/bootstrap.min.css}" />
 
     <style>
         body {
@@ -28,49 +32,87 @@
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>📚 Our Books</h1>
-        
-        <div class="header-actions">
-            <a href="/addbook" class="btn btn-success">+ Add New Book</a>
-        </div>
-        
-        <div th:if="${books.isEmpty()}" class="no-books">
-            <p>No books available at the moment.</p>
-        </div>
-        
-        <table th:unless="${books.isEmpty()}" class="table table-striped">
-            <thead class="table-success">
+<div class="container">
 
-                <tr>
-                    <th>ID</th>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="book : ${books}">
-                    <td th:text="${book.id}"></td>
-                    <td th:text="${book.title}"></td>
-                    <td th:text="${book.author}"></td>
-                    <td th:text="${book.category != null ? book.category.name : 'N/A'}"></td>
-                    <td th:text="${'$' + book.price}"></td>
-                    <td class="actions-cell">
-                        <a th:href="@{/edit/{id}(id=${book.id})}" class="btn btn-primary btn-sm me-1">Edit</a>
-                        <form th:action="@{/delete/{id}(id=${book.id})}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this book?');">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- USER INFO + LOGOUT -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
 
-        <br/>
-        <p><a href="/">← Back to Home</a></p>
+        <p>
+            Logged in as:
+            <b th:text="${#authentication.name}"></b>
+        </p>
+
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
+        </form>
+
     </div>
+
+    <h1>📚 Our Books</h1>
+
+    <div class="header-actions">
+        <a href="/addbook" class="btn btn-success">+ Add New Book</a>
+    </div>
+
+    <div th:if="${books.isEmpty()}" class="no-books">
+        <p>No books available at the moment.</p>
+    </div>
+
+    <table th:unless="${books.isEmpty()}" class="table table-striped">
+
+        <thead class="table-success">
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="book : ${books}">
+
+            <td th:text="${book.id}"></td>
+            <td th:text="${book.title}"></td>
+            <td th:text="${book.author}"></td>
+            <td th:text="${book.category != null ? book.category.name : 'N/A'}"></td>
+            <td th:text="${'$' + book.price}"></td>
+
+            <td class="actions-cell">
+
+                <a th:href="@{/edit/{id}(id=${book.id})}"
+                   class="btn btn-primary btn-sm me-1">
+                   Edit
+                </a>
+
+                <!-- DELETE VAIN ADMINILLE -->
+                <form th:action="@{/delete/{id}(id=${book.id})}"
+                      method="post"
+                      style="display:inline;"
+                      sec:authorize="hasAuthority('ADMIN')">
+
+                    <button type="submit"
+                            class="btn btn-danger btn-sm"
+                            onclick="return confirm('Are you sure you want to delete this book?');">
+                        Delete
+                    </button>
+
+                </form>
+
+            </td>
+
+        </tr>
+        </tbody>
+
+    </table>
+
+    <br/>
+    <p><a href="/">← Back to Home</a></p>
+
+</div>
 </body>
 </html>
