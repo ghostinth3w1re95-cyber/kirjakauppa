@@ -13,10 +13,13 @@ RUN find ./target -type f -name '*.jar' -exec cp {} /opt/app/app.jar \; -quit
 
 FROM eclipse-temurin:17-jre-alpine
 
+# 🔑 tärkeä: työskentelyhakemisto
 WORKDIR /app
 
+# kopioidaan jar
 COPY --from=builder /opt/app/app.jar /app/app.jar
 
+# 🔑 luodaan data-kansio ja oikeudet
 RUN mkdir -p /app/data && chmod -R 777 /app/data
 
 EXPOSE 8080
