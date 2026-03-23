@@ -1,9 +1,14 @@
-FROM maven:3.9.9-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY . .
-RUN mvn clean package -DskipTests
+FROM eclipse-temurin:17-jdk-focal as builder
+WORKDIR /opt/app
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN chmod +x ./mvnw
+RUN ./mvnw dependency:go-offline
+COPY ./src ./src
+RUN ./mvnw clean install -DskipTests 
+RUN find ./target -type f -name '*.jar' -exec cp {} /opt/app/app.jar \; -quit
 
-FROM eclipse-temurin:17-jdk
-WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-CMD ["java", "-jar", "app.jar"]
+FROM eclipse-temurin:17-jre-alpine
+COPY --from=builder /opt/app/*.jar /opt/app/
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/opt/app/app.jar" ]
