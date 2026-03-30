@@ -9,14 +9,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+
+import oma.kirja.kauppa.domain.Category;
+import oma.kirja.kauppa.domain.CategoryRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "user", authorities = { "USER" })
 public class CategoryControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Test
     public void testShowCategories() throws Exception {
@@ -43,21 +51,27 @@ public class CategoryControllerTest {
 
     @Test
     public void testDeleteCategory() throws Exception {
-        mockMvc.perform(post("/deletecategory/1")) // Assuming category with id 1 exists
+        Category category = categoryRepository.save(new Category("Delete Category"));
+
+        mockMvc.perform(post("/deletecategory/" + category.getCategoryid()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/categorylist"));
     }
 
     @Test
     public void testShowEditCategory() throws Exception {
-        mockMvc.perform(get("/editcategory/1")) // Assuming category with id 1 exists
+        Category category = categoryRepository.save(new Category("Editable Category"));
+
+        mockMvc.perform(get("/editcategory/" + category.getCategoryid()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("editcategory"));
     }
 
     @Test
     public void testEditCategory() throws Exception {
-        mockMvc.perform(post("/editcategory/1")
+        Category category = categoryRepository.save(new Category("Original Category"));
+
+        mockMvc.perform(post("/editcategory/" + category.getCategoryid())
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("name", "Updated Category"))
                 .andExpect(status().is3xxRedirection())

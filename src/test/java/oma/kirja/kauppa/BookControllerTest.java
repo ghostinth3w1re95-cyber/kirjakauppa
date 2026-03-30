@@ -12,12 +12,24 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import oma.kirja.kauppa.domain.Book;
+import oma.kirja.kauppa.domain.BookRepository;
+import oma.kirja.kauppa.domain.Category;
+import oma.kirja.kauppa.domain.CategoryRepository;
+
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "user", authorities = { "USER" })
 public class BookControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Test
     public void testShowRoot() throws Exception {
@@ -48,42 +60,51 @@ public class BookControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testAddBook() throws Exception {
+        Category category = categoryRepository.save(new Category("Test Category For Add"));
+
         mockMvc.perform(post("/addbook")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("title", "New Book")
                 .param("author", "New Author")
                 .param("price", "25.00")
-                .param("category.categoryid", "1")) // Assuming category exists
+                .param("category.categoryid", String.valueOf(category.getCategoryid())))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/books"));
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @WithMockUser(username = "admin", authorities = { "ADMIN" })
     public void testDeleteBook() throws Exception {
-        mockMvc.perform(post("/delete/1")) // Assuming book with id 1 exists
+        Category category = categoryRepository.save(new Category("Test Category For Delete"));
+        Book book = bookRepository.save(new Book("Delete Me", "Admin", 15.0, category));
+
+        mockMvc.perform(post("/delete/" + book.getId()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/books"));
     }
 
     @Test
     public void testShowEditBook() throws Exception {
-        mockMvc.perform(get("/edit/1")) // Assuming book with id 1 exists
+        Category category = categoryRepository.save(new Category("Test Category For Edit View"));
+        Book book = bookRepository.save(new Book("Editable Book", "Editor", 10.0, category));
+
+        mockMvc.perform(get("/edit/" + book.getId()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("edit"));
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testEditBook() throws Exception {
-        mockMvc.perform(post("/edit/1")
+        Category category = categoryRepository.save(new Category("Test Category For Edit"));
+        Book book = bookRepository.save(new Book("Original Book", "Original Author", 20.0, category));
+
+        mockMvc.perform(post("/edit/" + book.getId())
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("title", "Updated Book")
                 .param("author", "Updated Author")
                 .param("price", "30.00")
-                .param("category.categoryid", "1"))
+                .param("category.categoryid", String.valueOf(category.getCategoryid())))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/books"));
     }
